@@ -1,0 +1,15 @@
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    isDefault: true
+    secureJsonData:
+      token: admin123
+    jsonData:
+      version: Flux
+      organization: orhan
+      defaultBucket: sensors
+      tlsSkipVerify: true

@@ -1,0 +1,497 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+        "enable": true,
+        "hide": false,
+        "iconColor": "#EF4444",
+        "name": "Anomalies",
+        "query": "from(bucket: \"sensors\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"anomalies\") |> filter(fn: (r) => r.machine_id == \"$machine_id\") |> filter(fn: (r) => r._field == \"capteur\") |> keep(columns: [\"_time\", \"severity\"])",
+        "showIn": 0,
+        "textFormat": "Sévérité: ${severity}",
+        "titleFormat": "Anomalie"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": 2,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#EF4444", "value": 0 },
+              { "color": "#F97316", "value": 30 },
+              { "color": "#F59E0B", "value": 60 },
+              { "color": "#10B981", "value": 80 }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": { "h": 9, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["last"], "values": false },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": { "color": "#E2E8F0", "fontSize": 24 },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+          "query": "from(bucket: \"sensors\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"health_score\") |> filter(fn: (r) => r._field == \"health_score\") |> filter(fn: (r) => r.machine_id == \"$machine_id\") |> last() |> yield()",
+          "refId": "A"
+        }
+      ],
+      "title": "Health Score - $machine_id",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#EF4444", "value": 0 },
+              { "color": "#F97316", "value": 15 },
+              { "color": "#F59E0B", "value": 45 },
+              { "color": "#10B981", "value": 90 }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": { "h": 4, "w": 3, "x": 6, "y": 0 },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["last"], "values": false },
+        "text": { "color": "#F8FAFC", "fontSize": 22 },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+          "query": "from(bucket: \"sensors\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"health_score\") |> filter(fn: (r) => r._field == \"rul_days\") |> filter(fn: (r) => r.machine_id == \"$machine_id\") |> last() |> yield()",
+          "refId": "A"
+        }
+      ],
+      "title": "RUL estimé (jours)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": { "h": 9, "w": 15, "x": 9, "y": 0 },
+      "id": 3,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+          "query": "from(bucket: \"sensors\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"health_score\") |> filter(fn: (r) => r._field == \"anomaly_score\") |> filter(fn: (r) => r.machine_id == \"$machine_id\") |> aggregateWindow(every: 1m, fn: mean) |> yield()",
+          "refId": "A"
+        }
+      ],
+      "title": "Anomaly Score - $machine_id",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "continuous-GrYlRd" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "dashed" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "transparent", "value": null },
+              { "color": "#F59E0B", "value": 60 },
+              { "color": "#EF4444", "value": 75 }
+            ]
+          },
+          "unit": "celsius"
+        }
+      },
+      "gridPos": { "h": 7, "w": 6, "x": 0, "y": 9 },
+      "id": 4,
+      "options": {
+        "legend": { "showLegend": false },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+          "query": "from(bucket: \"sensors\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"sensor_reading\") |> filter(fn: (r) => r._field == \"temperature_bearing_mean\") |> filter(fn: (r) => r.machine_id == \"$machine_id\") |> aggregateWindow(every: 30s, fn: mean) |> yield()",
+          "refId": "A"
+        }
+      ],
+      "title": "Température - $machine_id",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "continuous-blues" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "dashed" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "transparent", "value": null },
+              { "color": "#F59E0B", "value": 4 },
+              { "color": "#EF4444", "value": 6 }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": { "h": 7, "w": 6, "x": 6, "y": 9 },
+      "id": 5,
+      "options": {
+        "legend": { "showLegend": false },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+          "query": "from(bucket: \"sensors\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"sensor_reading\") |> filter(fn: (r) => r._field == \"vibration_axial_mean\") |> filter(fn: (r) => r.machine_id == \"$machine_id\") |> aggregateWindow(every: 30s, fn: mean) |> yield()",
+          "refId": "A"
+        }
+      ],
+      "title": "Vibration - $machine_id",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "continuous-blues" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "unit": "pressurepsi"
+        }
+      },
+      "gridPos": { "h": 7, "w": 6, "x": 12, "y": 9 },
+      "id": 6,
+      "options": {
+        "legend": { "showLegend": false },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+          "query": "from(bucket: \"sensors\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"sensor_reading\") |> filter(fn: (r) => r._field == \"pressure_hydraulic_mean\") |> filter(fn: (r) => r.machine_id == \"$machine_id\") |> aggregateWindow(every: 30s, fn: mean) |> yield()",
+          "refId": "A"
+        }
+      ],
+      "title": "Pression Hydraulique - $machine_id",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "continuous-Oranges" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "unit": "watt"
+        }
+      },
+      "gridPos": { "h": 7, "w": 6, "x": 18, "y": 9 },
+      "id": 7,
+      "options": {
+        "legend": { "showLegend": false },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+          "query": "from(bucket: \"sensors\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"sensor_reading\") |> filter(fn: (r) => r._field == \"power_consumption_mean\") |> filter(fn: (r) => r.machine_id == \"$machine_id\") |> aggregateWindow(every: 30s, fn: mean) |> yield()",
+          "refId": "A"
+        }
+      ],
+      "title": "Consommation Électrique - $machine_id",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+      "description": "Évolution du Health Score pour la machine sélectionnée",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "dashed" }
+          },
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#EF4444", "value": null },
+              { "color": "#F59E0B", "value": 60 },
+              { "color": "#10B981", "value": 80 }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 16 },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": ["lastNotNull", "mean", "min"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+          "query": "from(bucket: \"sensors\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"health_score\") |> filter(fn: (r) => r._field == \"health_score\") |> filter(fn: (r) => r.machine_id == \"$machine_id\") |> aggregateWindow(every: 1m, fn: mean) |> yield()",
+          "refId": "A"
+        }
+      ],
+      "title": "Health Score Évolution - $machine_id",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+      "description": "Historique des scores d'anomalie avec seuils de détection",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "continuous-Reds" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "dashed" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "transparent", "value": null },
+              { "color": "#EF4444", "value": -0.8 }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 16 },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": ["lastNotNull", "mean", "max"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+          "query": "from(bucket: \"sensors\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"health_score\") |> filter(fn: (r) => r._field == \"anomaly_score\") |> filter(fn: (r) => r.machine_id == \"$machine_id\") |> aggregateWindow(every: 1m, fn: mean) |> yield()",
+          "refId": "A"
+        }
+      ],
+      "title": "Anomaly Score Historique - $machine_id",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["maintenance", "orhan", "detail", "machine"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": "INJ-01", "value": "INJ-01" },
+        "datasource": { "type": "influxdb", "uid": "P8BA1E8C46CE71D7F" },
+        "definition": "from(bucket: \"sensors\") |> range(start: v.timeRangeStart) |> filter(fn: (r) => r._measurement == \"health_score\") |> keep(columns: [\"machine_id\"]) |> distinct(column: \"machine_id\") |> group()",
+        "includeAll": false,
+        "label": "Machine",
+        "multi": false,
+        "name": "machine_id",
+        "query": "from(bucket: \"sensors\") |> range(start: v.timeRangeStart) |> filter(fn: (r) => r._measurement == \"health_score\") |> keep(columns: [\"machine_id\"]) |> distinct(column: \"machine_id\") |> group()",
+        "refresh": 1,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "2026-07-20T10:00:00.000Z", "to": "2026-07-20T11:00:00.000Z" },
+  "timezone": "browser",
+  "title": "Détail Machine - Maintenance Prédictive",
+  "uid": "orhan-detail",
+  "version": 3
+}

@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv*/
+venv/
+
+# Environment
+.env
+
+# Data (generated/runtime)
+data/delta_lake/
+data/delta_test/
+data/feedback.csv
+data/*.png
+data/*.txt
+
+# Local services
+.local/
+
+# MLflow
+mlruns/
+
+# Logs
+*.log
+*.err
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+.env
+.venv311/
+.venv/
+__pycache__/
+*.pyc
+mlflow.db
+mlruns/
+data/delta_lake/
+data/e2e_report.txt
+*.keras
+*.h5
+*.pkl
+.aider*

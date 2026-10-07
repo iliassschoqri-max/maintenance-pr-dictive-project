@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orhan Automotive — Maintenance Predictive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+</head>
+<body>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <h2><i class="fas fa-industry"></i>Orhan Automotive</h2>
+    <p>Maintenance Predictive</p>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" data-section="dashboard"><i class="fas fa-th-large"></i>Dashboard</div>
+    <div class="nav-item" data-section="machines"><i class="fas fa-cogs"></i>Machines</div>
+    <div class="nav-item" data-section="alerts"><i class="fas fa-bell"></i>Alertes<span class="badge-nav" id="alertCount">0</span></div>
+    <div class="nav-item" data-section="history"><i class="fas fa-history"></i>Historique</div>
+    <div class="nav-item" data-section="analytics"><i class="fas fa-chart-line"></i>Analytiques</div>
+    <div class="nav-item" data-section="reports"><i class="fas fa-file-pdf"></i>Rapports</div>
+  </nav>
+  <div class="sidebar-footer">PFA 2026 — EMSI Data Science</div>
+</aside>
+
+<div class="main" id="mainContent">
+  <div class="top-bar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="menu-toggle" id="menuBtn"><i class="fas fa-bars"></i></button>
+      <h1><span>Maintenance</span> — Supervision temps réel</h1>
+    </div>
+    <div class="top-bar-right">
+      <span class="badge-live" id="statusBadge"><span class="dot"></span>Live</span>
+      <span class="time" id="liveTime"></span>
+    </div>
+  </div>
+
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- SECTION: Dashboard -->
+  <div id="section-dashboard" class="section active">
+    <div class="row-2">
+      <div class="card card-table">
+        <div class="card-header"><h3><i class="fas fa-list"></i>Dernières alertes</h3></div>
+        <div style="max-height:320px;overflow-y:auto">
+          <table><thead><tr><th>Machine</th><th>Capteur</th><th>Score</th><th>Sévérité</th><th>Timestamp</th><th>Statut</th></tr></thead><tbody id="eventsBody"></tbody></table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3><i class="fas fa-chart-doughnut"></i>Répartition par statut</h3></div>
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+    <div class="row-2">
+      <div class="card"><div class="card-header"><h3><i class="fas fa-heartbeat"></i>Health Score par machine</h3></div><canvas id="healthChart"></canvas></div>
+      <div class="card"><div class="card-header"><h3><i class="fas fa-chart-line"></i>Évolution faux positifs</h3></div><canvas id="timelineChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- SECTION: Machines -->
+  <div id="section-machines" class="section">
+    <div class="card">
+      <div class="card-header"><h3><i class="fas fa-cogs"></i>Parc machines</h3></div>
+      <div class="machine-grid" id="machineGrid"></div>
+    </div>
+  </div>
+
+  <!-- SECTION: Alertes -->
+  <div id="section-alerts" class="section">
+    <div class="card">
+      <div class="card-header"><h3><i class="fas fa-bell"></i>Alertes</h3><span id="alertsCount" class="count-badge">0</span></div>
+      <div class="filters">
+        <div class="btn-group">
+          <button class="active" onclick="setFilter('active', this)">Actives</button>
+          <button onclick="setFilter('all', this)">Toutes</button>
+          <button onclick="setFilter('resolved', this)">Résolues</button>
+          <button onclick="setFilter('false_positive', this)">Faux positifs</button>
+        </div>
+        <select id="filter-machine" onchange="onMachineFilterChange()">
+          <option value="">Toutes les machines</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Machine</th><th>Type</th><th>Capteur</th><th>Score</th><th>Sévérité</th><th>Timestamp</th><th>Actions</th></tr></thead><tbody id="alertsBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: Historique -->
+  <div id="section-history" class="section">
+    <div class="card">
+      <div class="card-header"><h3><i class="fas fa-history"></i>Historique des validations</h3></div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Machine</th><th>Capteur</th><th>Score</th><th>Sévérité</th><th>Timestamp</th><th>Décision</th><th>Commentaire</th></tr></thead><tbody id="historyBody"></tbody></table>
+      </div>
+      <div class="pagination">
+        <button id="historyPrev" onclick="historyPrev()" disabled><i class="fas fa-chevron-left"></i> Précédent</button>
+        <span id="historyPageInfo">Page 1/1</span>
+        <button id="historyNext" onclick="historyNext()">Suivant <i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: Analytics -->
+  <div id="section-analytics" class="section">
+    <div class="row-2">
+      <div class="card"><div class="card-header"><h3><i class="fas fa-chart-bar"></i>Évolution du taux de faux positifs</h3></div><canvas id="fpChart"></canvas></div>
+      <div class="card"><div class="card-header"><h3><i class="fas fa-thermometer-half"></i>Température par machine</h3></div><canvas id="tempChart"></canvas></div>
+    </div>
+    <div class="row-3">
+      <div class="card"><div class="card-header"><h3><i class="fas fa-exclamation-triangle"></i>Anomalies détectées</h3></div><div id="anomalyStats" style="padding:20px;text-align:center;color:var(--text-muted)">Chargement...</div></div>
+      <div class="card"><div class="card-header"><h3><i class="fas fa-check-circle"></i>Précision du modèle</h3></div><div id="modelStats" style="padding:20px;text-align:center;color:var(--text-muted)">Chargement...</div></div>
+      <div class="card"><div class="card-header"><h3><i class="fas fa-clock"></i>RUL estimé</h3></div><div id="rulStats" style="padding:20px;text-align:center;color:var(--text-muted)">Chargement...</div></div>
+    </div>
+  </div>
+
+  <!-- SECTION: Rapports -->
+  <div id="section-reports" class="section">
+    <div class="row-2" style="grid-template-columns:1fr 1fr">
+      <div class="card">
+        <div class="card-header"><h3><i class="fas fa-file-csv"></i>Export CSV</h3></div>
+        <div style="padding:6px 0">
+          <label style="font-size:13px;font-weight:500;display:block;margin-bottom:8px">Type de rapport :</label>
+          <select id="csvType" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--card);color:var(--text);margin-bottom:14px">
+            <option value="summary">Résumé général</option>
+            <option value="alerts">Alertes</option>
+            <option value="machines">État des machines</option>
+            <option value="anomalies">Anomalies détectées</option>
+          </select>
+          <button onclick="downloadCSV()" style="width:100%;padding:10px;background:#10b981;color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer"><i class="fas fa-download"></i> Télécharger CSV</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3><i class="fas fa-file-pdf"></i>Export PDF</h3></div>
+        <div style="padding:6px 0">
+          <label style="font-size:13px;font-weight:500;display:block;margin-bottom:8px">Type de rapport :</label>
+          <select id="pdfType" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--card);color:var(--text);margin-bottom:14px">
+            <option value="complet">Rapport complet (graphiques + tableaux)</option>
+            <option value="summary">Résumé uniquement</option>
+          </select>
+          <button onclick="downloadPDF()" style="width:100%;padding:10px;background:#ef4444;color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer"><i class="fas fa-file-pdf"></i> Télécharger PDF</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="card-header"><h3><i class="fas fa-history"></i>Rapports générés</h3></div>
+      <div id="reportHistory" style="font-size:13px;color:var(--text-muted);text-align:center;padding:20px">Aucun rapport généré</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal machine detail -->
+<div id="modalOverlay" class="modal-overlay">
+  <div class="modal">
+    <button class="close" onclick="closeModal()">&times;</button>
+    <h2 id="modalTitle">Machine</h2>
+    <div id="modalContent">
+      <div class="loading">Chargement</div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

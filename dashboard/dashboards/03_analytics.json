@@ -1,0 +1,499 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": 3,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P8BA1E8C46CE71D7F"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "dashed" }
+          },
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#EF4444", "value": null },
+              { "color": "#F59E0B", "value": 60 },
+              { "color": "#10B981", "value": 80 }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": ["lastNotNull", "mean", "min"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P8BA1E8C46CE71D7F"
+          },
+          "query": "from(bucket: \"sensors\") |> range(start: -7d, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"health_score\") |> filter(fn: (r) => r._field == \"health_score\") |> aggregateWindow(every: 15m, fn: mean) |> yield(name: \"health_score\")"
+        }
+      ],
+      "title": "Evolution Health Score par machine (7 jours)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P8BA1E8C46CE71D7F"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "continuous-Reds" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "fillOpacity": 70,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineWidth": 0,
+            "scaleDistribution": { "type": "linear" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "barWidth": 0.7,
+        "fullHighlight": false,
+        "groupWidth": 0.5,
+        "legend": {
+          "calcs": ["sum", "mean"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 150
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P8BA1E8C46CE71D7F"
+          },
+          "query": "from(bucket: \"sensors\") |> range(start: -30d, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"anomalies\") |> filter(fn: (r) => r._field == \"capteur\") |> filter(fn: (r) => r.machine_id =~ /^[A-Za-z]+-\\d+$/) |> map(fn: (r) => ({r with _cnt: 1.0})) |> drop(columns: [\"_value\", \"_field\", \"severity\", \"status\"]) |> rename(columns: {_cnt: \"_value\"}) |> aggregateWindow(every: 2d, fn: sum, createEmpty: false)"
+        }
+      ],
+      "title": "Nombre d'anomalies detectees par jour (30 jours)",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P8BA1E8C46CE71D7F"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 0,
+        "y": 10
+      },
+      "id": 3,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": ["value", "percent"]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P8BA1E8C46CE71D7F"
+          },
+          "format": "table",
+          "query": "from(bucket: \"sensors\") |> range(start: -30d, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"anomalies\") |> filter(fn: (r) => r._field == \"capteur\") |> filter(fn: (r) => r.machine_id =~ /^[A-Za-z]+-\\d+$/) |> map(fn: (r) => ({ r with _cnt: 1.0})) |> drop(columns: [\"_value\", \"_field\", \"severity\", \"status\"]) |> group(columns: [\"machine_id\"]) |> sum(column: \"_cnt\") |> rename(columns: {_cnt: \"_value\"})"
+        }
+      ],
+      "title": "Repartition des anomalies par machine",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P8BA1E8C46CE71D7F"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 6,
+        "y": 10
+      },
+      "id": 4,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": ["value", "percent"]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P8BA1E8C46CE71D7F"
+          },
+          "format": "table",
+          "query": "from(bucket: \"sensors\") |> range(start: -30d, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"anomalies\") |> filter(fn: (r) => r._field == \"capteur\") |> filter(fn: (r) => r.machine_id =~ /^[A-Za-z]+-\\d+$/) |> map(fn: (r) => ({ r with type: if r.machine_id =~ /^INJ/ then \"Injection\" else if r.machine_id =~ /^SOUD/ then \"Soudure\" else if r.machine_id =~ /^ASSY/ then \"Assemblage\" else if r.machine_id =~ /^PEINT/ then \"Peinture\" else if r.machine_id =~ /^CTRL/ then \"Controle Qualite\" else if r.machine_id =~ /^MACH/ then \"Production\" else \"Autre\", _cnt: 1.0})) |> drop(columns: [\"_value\", \"_field\", \"severity\", \"status\"]) |> group(columns: [\"type\"]) |> sum(column: \"_cnt\") |> rename(columns: {_cnt: \"_value\"})"
+        }
+      ],
+      "title": "Repartition par type de machine",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P8BA1E8C46CE71D7F"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": {
+            "fillOpacity": 80
+          },
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "#EF4444", "value": null },
+              { "color": "#F97316", "value": 50 },
+              { "color": "#F59E0B", "value": 70 },
+              { "color": "#10B981", "value": 85 }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "INJ-01"
+            },
+            "properties": [
+              { "id": "displayName", "value": "INJ-01 (Injection)" }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "INJ-02"
+            },
+            "properties": [
+              { "id": "displayName", "value": "INJ-02 (Injection)" }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "SOUD-01"
+            },
+            "properties": [
+              { "id": "displayName", "value": "SOUD-01 (Soudure)" }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ASSY-01"
+            },
+            "properties": [
+              { "id": "displayName", "value": "ASSY-01 (Assemblage)" }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ASSY-02"
+            },
+            "properties": [
+              { "id": "displayName", "value": "ASSY-02 (Assemblage)" }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "PEINT-01"
+            },
+            "properties": [
+              { "id": "displayName", "value": "PEINT-01 (Peinture)" }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "FRAIS-01"
+            },
+            "properties": [
+              { "id": "displayName", "value": "FRAIS-01 (Fraisage CNC)" }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TOUR-01"
+            },
+            "properties": [
+              { "id": "displayName", "value": "TOUR-01 (Tour CNC)" }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "CTRL-01"
+            },
+            "properties": [
+              { "id": "displayName", "value": "CTRL-01 (Controle)" }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "MACH-01"
+            },
+            "properties": [
+              { "id": "displayName", "value": "MACH-01" }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "MACH-02"
+            },
+            "properties": [
+              { "id": "displayName", "value": "MACH-02" }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "MACH-03"
+            },
+            "properties": [
+              { "id": "displayName", "value": "MACH-03" }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "MACH-04"
+            },
+            "properties": [
+              { "id": "displayName", "value": "MACH-04" }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "MACH-05"
+            },
+            "properties": [
+              { "id": "displayName", "value": "MACH-05" }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      },
+      "id": 5,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P8BA1E8C46CE71D7F"
+          },
+          "format": "table",
+          "query": "from(bucket: \"sensors\") |> range(start: -7d, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"health_score\") |> filter(fn: (r) => r._field == \"health_score\") |> mean() |> group() |> map(fn: (r) => ({ r with _value: float(v: r._value) })) |> yield(name: \"dispo\")"
+        }
+      ],
+      "title": "Taux de disponibilite par machine (7 jours)",
+      "type": "bargauge"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["maintenance", "orhan", "analytics", "tendances"],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "influxdb",
+          "uid": "P8BA1E8C46CE71D7F"
+        },
+        "definition": "from(bucket: \"sensors\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"health_score\") |> keep(columns: [\"machine_id\"]) |> distinct(column: \"machine_id\") |> group()",
+        "includeAll": true,
+        "label": "Machine",
+        "multi": true,
+        "name": "machine_id",
+        "query": "from(bucket: \"sensors\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"health_score\") |> keep(columns: [\"machine_id\"]) |> distinct(column: \"machine_id\") |> group()",
+        "refresh": 1,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "2026-07-20T10:00:00.000Z",
+    "to": "2026-07-20T11:00:00.000Z"
+  },
+  "timezone": "browser",
+  "title": "Analyse & Tendances - Maintenance Prédictive",
+  "uid": "orhan-analytics",
+  "version": 2
+}

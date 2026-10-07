@@ -1,0 +1,17 @@
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: ""
+      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN:-admin123admin123admin123admin123ad==}
+    volumes:
+      - ./dashboard/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./dashboard/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./dashboard/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - pfa-network

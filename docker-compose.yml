@@ -1,0 +1,174 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - pfa-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    networks:
+      - pfa-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: PLAINTEXT_INTERNAL://kafka:29092
+    ports:
+      - "8080:8080"
+    networks:
+      - pfa-network
+
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: admin123
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: admin123admin123admin123admin123ad==
+      DOCKER_INFLUXDB_INIT_ORG: orhan
+      DOCKER_INFLUXDB_INIT_BUCKET: sensors
+    ports:
+      - "8086:8086"
+    networks:
+      - pfa-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    depends_on:
+      - influxdb
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      INFLUXDB_TOKEN: admin123admin123admin123admin123ad==
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./dashboard/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./dashboard/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./dashboard/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - pfa-network
+
+  airflow-db:
+    image: postgres:13
+    container_name: airflow-db
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    ports:
+      - "5432:5432"
+    networks:
+      - pfa-network
+
+  airflow-init:
+    build: ./airflow
+    container_name: airflow-init
+    depends_on:
+      - airflow-db
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
+      MLFLOW_TRACKING_URI: http://192.168.65.254:5000
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./ml_models:/opt/airflow/ml_models
+      - ./data:/opt/airflow/data
+    entrypoint: >
+      bash -c "airflow db init && airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com"
+    networks:
+      - pfa-network
+
+  airflow-webserver:
+    build: ./airflow
+    container_name: airflow-webserver
+    restart: always
+    depends_on:
+      - airflow-db
+      - airflow-init
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
+      AIRFLOW__WEBSERVER__DEFAULT_USER_USERNAME: admin
+      MLFLOW_TRACKING_URI: http://192.168.65.254:5000
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./ml_models:/opt/airflow/ml_models
+      - ./data:/opt/airflow/data
+      - ./simulator:/opt/airflow/simulator
+      - ./storage:/opt/airflow/storage
+      - ./mlruns:/opt/airflow/mlruns
+    ports:
+      - "8081:8080"
+    command: webserver
+    networks:
+      - pfa-network
+
+  airflow-scheduler:
+    build: ./airflow
+    container_name: airflow-scheduler
+    restart: always
+    depends_on:
+      - airflow-db
+      - airflow-init
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
+      MLFLOW_TRACKING_URI: http://192.168.65.254:5000
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./ml_models:/opt/airflow/ml_models
+      - ./data:/opt/airflow/data
+      - ./simulator:/opt/airflow/simulator
+      - ./storage:/opt/airflow/storage
+      - ./mlruns:/opt/airflow/mlruns
+    command: scheduler
+    networks:
+      - pfa-network
+
+  # MLflow lance localement: mlflow ui --port 5000
+
+  dashboard-web:
+    image: nginx:alpine
+    container_name: dashboard-web
+    ports:
+      - "8082:80"
+    volumes:
+      - ./dashboard-web:/usr/share/nginx/html:ro
+    networks:
+      - pfa-network
+
+networks:
+  pfa-network:
+    driver: bridge
